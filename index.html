@@ -1,41 +1,132 @@
 <!DOCTYPE html>
-<!-- saved from url=(0023)http://127.0.0.1:64737/ -->
-<html lang="id"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>WebGIS Bangunan Permukiman</title>
 
-  <link href="./index_files/bootstrap.min.css" rel="stylesheet">
-  <link href="./index_files/all.min.css" rel="stylesheet">
-  <link href="./index_files/mapbox-gl.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+  <link href="https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.css" rel="stylesheet">
 
   <style>
+    :root {
+      --primary: #0d6efd;
+      --primary-dark: #0b5ed7;
+      --accent: #f97316;
+      --accent-dark: #c2410c;
+      --soft-bg: #f4f7fb;
+      --card-bg: rgba(255, 255, 255, 0.96);
+      --text-dark: #1f2937;
+      --text-muted: #6b7280;
+      --shadow-soft: 0 8px 24px rgba(15, 23, 42, 0.08);
+      --shadow-hover: 0 16px 40px rgba(15, 23, 42, 0.14);
+    }
+
     body {
       font-family: Arial, Helvetica, sans-serif;
-      background-color: #f8f9fa;
+      background:
+        radial-gradient(circle at top left, rgba(13,110,253,0.06), transparent 26%),
+        radial-gradient(circle at bottom right, rgba(249,115,22,0.06), transparent 22%),
+        var(--soft-bg);
       margin: 0;
       padding: 0;
       padding-top: 56px;
+      color: var(--text-dark);
+    }
+
+    .navbar {
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.14);
+      backdrop-filter: blur(8px);
     }
 
     .navbar-brand {
       font-weight: 700;
+      letter-spacing: 0.2px;
     }
 
     .hero {
-      background: linear-gradient(135deg, #0d6efd, #0b5ed7);
+      background:
+        linear-gradient(135deg, rgba(13,110,253,0.95), rgba(11,94,215,0.92)),
+        linear-gradient(45deg, rgba(255,255,255,0.04), transparent 50%);
       color: white;
       text-align: center;
-      padding: 60px 20px;
-      position: sticky;
-      top: 56px;
-      z-index: 1020;
+      padding: 30px 20px;
+      position: relative;
+      top: 0;
+      z-index: 1;
+      border-bottom-left-radius: 18px;
+      border-bottom-right-radius: 18px;
+      box-shadow: 0 8px 22px rgba(13, 110, 253, 0.16);
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(255,255,255,0.14), transparent 20%),
+        radial-gradient(circle at 80% 30%, rgba(255,255,255,0.10), transparent 22%);
+      pointer-events: none;
+    }
+
+    .hero .container {
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.14);
+      border: 1px solid rgba(255,255,255,0.18);
+      font-size: 0.84rem;
+      margin-bottom: 12px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.1);
     }
 
     .hero h1 {
-      font-size: 2rem;
+      font-size: 1.65rem;
       font-weight: bold;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
+    }
+
+    .hero p {
+      margin-bottom: 0;
+      font-size: 0.95rem;
+      opacity: 0.96;
+    }
+
+    .hero-stats {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .hero-stat {
+      min-width: 120px;
+      padding: 10px 14px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.13);
+      border: 1px solid rgba(255,255,255,0.15);
+      backdrop-filter: blur(5px);
+    }
+
+    .hero-stat .number {
+      display: block;
+      font-size: 1.05rem;
+      font-weight: 700;
+    }
+
+    .hero-stat .label {
+      font-size: 0.78rem;
+      opacity: 0.92;
     }
 
     .content-section {
@@ -43,18 +134,48 @@
     }
 
     .info-box,
-    .map-box {
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    .map-box,
+    .mini-card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      box-shadow: var(--shadow-soft);
       padding: 20px;
       height: 100%;
+      border: 1px solid rgba(255,255,255,0.65);
+      backdrop-filter: blur(10px);
+      transition: all 0.25s ease;
+    }
+
+    .info-box:hover,
+    .map-box:hover,
+    .mini-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-hover);
     }
 
     .info-box h4,
     .map-box h4 {
       font-weight: 700;
       margin-bottom: 18px;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      margin-bottom: 18px;
+    }
+
+    .section-title i {
+      width: 36px;
+      height: 36px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      color: var(--primary);
+      background: linear-gradient(135deg, rgba(13,110,253,0.12), rgba(249,115,22,0.10));
     }
 
     .info-box ol {
@@ -66,8 +187,88 @@
       line-height: 1.6;
     }
 
+    .info-grid {
+      display: grid;
+      gap: 10px;
+      margin-top: 10px;
+      margin-bottom: 10px;
+    }
+
+    .mini-card {
+      padding: 14px 16px;
+    }
+
+    .mini-card small {
+      display: block;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .mini-card strong {
+      color: var(--text-dark);
+    }
+
+    .status-box {
+      margin-top: 15px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      font-size: 14px;
+      background: #fff3cd;
+      color: #664d03;
+      border: 1px solid #ffecb5;
+      line-height: 1.6;
+    }
+
+    .quick-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .quick-actions .btn {
+      border-radius: 12px;
+      font-weight: 600;
+      padding: 10px 12px;
+    }
+
+    .map-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .map-header-text p {
+      margin: 4px 0 0;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .chip-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chip {
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: #eef4ff;
+      color: var(--primary-dark);
+      border: 1px solid rgba(13,110,253,0.1);
+      font-size: 0.84rem;
+      font-weight: 700;
+    }
+
     .map-wrapper {
       position: relative;
+      border-radius: 16px;
+      overflow: hidden;
+      background: #dbeafe;
+      border: 1px solid rgba(0,0,0,0.06);
     }
 
     #map {
@@ -82,8 +283,51 @@
       top: 20px;
       left: 20px;
       z-index: 2;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      border-radius: 10px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.16);
+      font-weight: 700;
+    }
+
+    .toolbar {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 210px;
+    }
+
+    .toolbar-box,
+    .overlay-card {
+      background: rgba(255,255,255,0.95);
+      padding: 12px;
+      border-radius: 14px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
+      border: 1px solid rgba(255,255,255,0.65);
+      backdrop-filter: blur(8px);
+    }
+
+    .toolbar-title {
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #374151;
+      margin-bottom: 8px;
+      letter-spacing: 0.4px;
+    }
+
+    .toolbar-buttons {
+      display: grid;
+      gap: 8px;
+    }
+
+    .toolbar-buttons .btn {
+      border-radius: 10px;
+      text-align: left;
+      font-weight: 700;
+      font-size: 0.9rem;
     }
 
     .legend {
@@ -93,10 +337,11 @@
       z-index: 2;
       background: rgba(255, 255, 255, 0.96);
       padding: 12px 14px;
-      border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
       font-size: 14px;
       line-height: 1.6;
+      border: 1px solid rgba(255,255,255,0.65);
     }
 
     .legend-title {
@@ -112,16 +357,119 @@
       background-color: #f97316;
       border: 1px solid #c2410c;
       vertical-align: middle;
+      border-radius: 4px;
     }
 
-    .status-box {
-      margin-top: 15px;
+    .map-overlay-right {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 260px;
+    }
+
+    .overlay-card h6 {
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
+
+    .stat-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+      font-size: 0.92rem;
+    }
+
+    .stat-line:last-child {
+      margin-bottom: 0;
+    }
+
+    .stat-line strong {
+      color: var(--primary-dark);
+    }
+
+    .mouse-position {
+      color: #374151;
+      font-size: 0.9rem;
+    }
+
+    .loading-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,255,255,0.72);
+      backdrop-filter: blur(4px);
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    .loading-overlay.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .loading-box {
+      background: white;
+      border-radius: 18px;
+      padding: 22px 24px;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.14);
+      min-width: 240px;
+      text-align: center;
+    }
+
+    .custom-popup .mapboxgl-popup-content {
+      border-radius: 16px;
+      padding: 0;
+      overflow: hidden;
+      box-shadow: 0 14px 34px rgba(15,23,42,0.18);
+    }
+
+    .popup-card {
+      min-width: 220px;
+      font-family: Arial, sans-serif;
+    }
+
+    .popup-header {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: white;
       padding: 12px 14px;
-      border-radius: 10px;
-      font-size: 14px;
-      background: #fff3cd;
-      color: #664d03;
-      border: 1px solid #ffecb5;
+      font-weight: 700;
+    }
+
+    .popup-body {
+      padding: 14px;
+      background: white;
+    }
+
+    .popup-item {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 6px 0;
+      border-bottom: 1px dashed #e5e7eb;
+      font-size: 0.92rem;
+    }
+
+    .popup-item:last-child {
+      border-bottom: none;
+    }
+
+    .popup-key {
+      font-weight: 700;
+      color: #374151;
+    }
+
+    .popup-value {
+      text-align: right;
+      color: #111827;
+      word-break: break-word;
     }
 
     footer {
@@ -130,54 +478,65 @@
       text-align: center;
       padding: 14px 10px;
       margin-top: 30px;
+      border-top-left-radius: 18px;
+      border-top-right-radius: 18px;
     }
-  </style>
-<!-- Code injected by Five-server -->
-  <script async="" data-id="five-server" data-file="c:\Users\HP\Documents\KULIAH\SMT 6 ALLAH\BANGUNAN\index.html" type="application/javascript" src="./index_files/fiveserver.js.download"></script>
-  <style>      
-      /* Injected by five-server */
-      /*[data-highlight="true"] {
-        border: 1px rgb(90,170,255) solid !important;
-        background-color: rgba(155,215,255,0.5);
-        animation: fadeOutHighlight 1s forwards 0.5s;
-      }
-      img[data-highlight="true"] {
-        filter: sepia(100%) hue-rotate(180deg) saturate(200%);
-        animation: fadeOutHighlightIMG 0.5s forwards 0.5s;
-      }*/
-      @keyframes fadeOutHighlight {
-        from {background-color: rgba(155,215,255,0.5);}
-        to {background-color: rgba(155,215,255,0);}
-      }      
-      @keyframes fadeOutHighlightIMG {
-        0% {filter: sepia(100%) hue-rotate(180deg) saturate(200%);}
-        33% {filter: sepia(66%) hue-rotate(180deg) saturate(100%);}
-        50% {filter: sepia(50%) hue-rotate(90deg) saturate(50%);}
-        66% {filter: sepia(33%) hue-rotate(0deg) saturate(100%);}
-        100% {filter: sepia(0%) hue-rotate(0deg) saturate(100%);}
-      }
-      @keyframes fiveserverInfoPopup {
-        0%   {top:-40px;}
-        15%  {top:4px;}
-        85%  {top:4px;}
-        100% {top:-40px;}
-      }
-      /*smaller*/
-      @media (max-width: 640px) {
-        #fiveserver-info-wrapper {
-          max-width: 98%;
-        }
-        #fiveserver-info {
-          border-radius: 0px;
-        }      
+
+    @media (max-width: 991.98px) {
+      .hero {
+        padding: 26px 16px;
       }
 
-      </style></head>
+      .hero h1 {
+        font-size: 1.45rem;
+      }
+
+      .toolbar,
+      .map-overlay-right {
+        position: static;
+        width: auto;
+        margin: 12px;
+      }
+
+      #map {
+        height: 560px;
+      }
+    }
+
+    @media (max-width: 575.98px) {
+      body {
+        padding-top: 54px;
+      }
+
+      .hero {
+        padding: 22px 14px;
+      }
+
+      .hero h1 {
+        font-size: 1.2rem;
+      }
+
+      .quick-actions {
+        grid-template-columns: 1fr;
+      }
+
+      #map {
+        height: 500px;
+      }
+
+      .legend {
+        bottom: 12px;
+        left: 12px;
+        font-size: 13px;
+      }
+    }
+  </style>
+</head>
 <body>
 
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
     <div class="container">
-      <a class="navbar-brand" href="http://127.0.0.1:64737/#">
+      <a class="navbar-brand" href="#">
         <i class="fa-solid fa-map-location-dot me-2"></i>WebGIS Bangunan
       </a>
     </div>
@@ -185,8 +544,27 @@
 
   <header class="hero">
     <div class="container">
+      <div class="hero-badge">
+        <i class="fa-solid fa-layer-group"></i>
+        Visualisasi Spasial Permukiman
+      </div>
       <h1>Peta Sebaran Bangunan Permukiman</h1>
       <p>Visualisasi hasil digitasi bangunan permukiman berbasis WebGIS</p>
+
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <span class="number" id="heroFeatureCount">0</span>
+          <span class="label">Jumlah Feature</span>
+        </div>
+        <div class="hero-stat">
+          <span class="number">Polygon</span>
+          <span class="label">Geometri</span>
+        </div>
+        <div class="hero-stat">
+          <span class="number">Permukiman</span>
+          <span class="label">Layer</span>
+        </div>
+      </div>
     </div>
   </header>
 
@@ -194,7 +572,11 @@
     <div class="row g-4">
       <div class="col-lg-3">
         <div class="info-box">
-          <h4>Petunjuk</h4>
+          <div class="section-title">
+            <i class="fa-solid fa-circle-info"></i>
+            <span>Petunjuk</span>
+          </div>
+
           <ol>
             <li>Gunakan scroll mouse untuk zoom in dan zoom out.</li>
             <li>Klik dan tahan peta untuk menggeser tampilan.</li>
@@ -204,27 +586,129 @@
 
           <hr>
 
-          <h5>Informasi Layer</h5>
-          <p class="mb-1"><b>Nama Layer:</b> Permukiman</p>
-          <p class="mb-1"><b>Geometri:</b> Polygon</p>
-          <p class="mb-0"><b>Keterangan:</b> Permukiman</p>
+          <div class="section-title">
+            <i class="fa-solid fa-database"></i>
+            <span>Informasi Layer</span>
+          </div>
 
-          <div id="status" class="status-box mt-3" style="background: rgb(209, 231, 221); color: rgb(15, 81, 50); border: 1px solid rgb(186, 219, 204);">Status: layer Permukiman berhasil ditampilkan.</div>
+          <div class="info-grid">
+            <div class="mini-card">
+              <small>Nama Layer</small>
+              <strong>Permukiman</strong>
+            </div>
+            <div class="mini-card">
+              <small>Geometri</small>
+              <strong>Polygon</strong>
+            </div>
+            <div class="mini-card">
+              <small>Keterangan</small>
+              <strong>Permukiman</strong>
+            </div>
+          </div>
+
+          <div id="status" class="status-box mt-3">
+            Status: menunggu peta dimuat...
+          </div>
+
+          <div class="quick-actions">
+            <button class="btn btn-primary" onclick="kembaliKeLokasi()">
+              <i class="fa-solid fa-location-crosshairs me-1"></i>Ke Lokasi
+            </button>
+            <button class="btn btn-outline-secondary" onclick="toggleLegend()">
+              <i class="fa-solid fa-list me-1"></i>Legenda
+            </button>
+            <button class="btn btn-outline-dark" onclick="toggleLayerVisibility()">
+              <i class="fa-solid fa-layer-group me-1"></i>Layer
+            </button>
+            <button class="btn btn-outline-primary" onclick="toggleFullscreenMap()">
+              <i class="fa-solid fa-expand me-1"></i>Fullscreen
+            </button>
+          </div>
         </div>
       </div>
 
       <div class="col-lg-9">
         <div class="map-box">
-          <h4>Peta</h4>
+          <div class="map-header">
+            <div class="map-header-text">
+              <h4>Peta</h4>
+              <p>Tampilan peta permukiman dengan kontrol tambahan dan ringkasan data.</p>
+            </div>
 
-          <div class="map-wrapper">
-            <button class="btn btn-primary btn-fly" onclick="kembaliKeLokasi()">
+            <div class="chip-group">
+              <div class="chip"><i class="fa-solid fa-map me-1"></i>WebGIS</div>
+              <div class="chip"><i class="fa-solid fa-building me-1"></i>Permukiman</div>
+              <div class="chip"><i class="fa-solid fa-location-dot me-1"></i>Interaktif</div>
+            </div>
+          </div>
+
+          <div class="map-wrapper" id="mapWrapper">
+            <div class="loading-overlay" id="loadingOverlay">
+              <div class="loading-box">
+                <div class="spinner-border text-primary mb-3" role="status"></div>
+                <div class="fw-bold">Memuat peta...</div>
+                <small class="text-muted">Sedang membaca file GeoJSON</small>
+              </div>
+            </div>
+
+            <div class="toolbar">
+              <div class="toolbar-box">
+                <div class="toolbar-title">Navigasi</div>
+                <div class="toolbar-buttons">
+                  <button class="btn btn-primary btn-fly position-static" onclick="kembaliKeLokasi()">
+                    <i class="fa-solid fa-location-crosshairs me-1"></i>Kembali ke Lokasi
+                  </button>
+                </div>
+              </div>
+
+              <div class="toolbar-box">
+                <div class="toolbar-title">Basemap</div>
+                <div class="toolbar-buttons">
+                  <button class="btn btn-outline-primary" onclick="gantiBasemap('streets')">
+                    <i class="fa-solid fa-road me-1"></i>Streets
+                  </button>
+                  <button class="btn btn-outline-primary" onclick="gantiBasemap('satellite')">
+                    <i class="fa-solid fa-satellite me-1"></i>Satellite
+                  </button>
+                  <button class="btn btn-outline-primary" onclick="gantiBasemap('light')">
+                    <i class="fa-regular fa-map me-1"></i>Light
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="map-overlay-right">
+              <div class="overlay-card">
+                <h6><i class="fa-solid fa-chart-simple me-2 text-primary"></i>Ringkasan Data</h6>
+                <div class="stat-line">
+                  <span>Jumlah feature</span>
+                  <strong id="featureCount">0</strong>
+                </div>
+                <div class="stat-line">
+                  <span>Layer aktif</span>
+                  <strong id="layerStatus">Belum dimuat</strong>
+                </div>
+                <div class="stat-line">
+                  <span>Basemap</span>
+                  <strong id="basemapStatus">Streets</strong>
+                </div>
+              </div>
+
+              <div class="overlay-card">
+                <h6><i class="fa-solid fa-crosshairs me-2 text-primary"></i>Koordinat Kursor</h6>
+                <div class="mouse-position" id="mousePosition">
+                  Gerakkan kursor di atas peta...
+                </div>
+              </div>
+            </div>
+
+            <button class="btn btn-primary btn-fly d-none" onclick="kembaliKeLokasi()">
               <i class="fa-solid fa-location-crosshairs me-1"></i>Kembali ke Lokasi
             </button>
 
-            <div id="map" class="mapboxgl-map"><div class="mapboxgl-canary" style="visibility: hidden;"></div><div class="mapboxgl-canvas-container mapboxgl-interactive mapboxgl-touch-drag-pan mapboxgl-touch-zoom-rotate"><canvas class="mapboxgl-canvas" tabindex="0" aria-label="Map" role="region" width="791" height="600" style="width: 791px; height: 600px;"></canvas></div><div class="mapboxgl-control-container"><div class="mapboxgl-ctrl-top-left"><div class="mapboxgl-ctrl mapboxgl-ctrl-group"><button class="mapboxgl-ctrl-zoom-in" type="button" aria-label="Zoom in" aria-disabled="false"><span class="mapboxgl-ctrl-icon" aria-hidden="true" title="Zoom in"></span></button><button class="mapboxgl-ctrl-zoom-out" type="button" aria-label="Zoom out" aria-disabled="false"><span class="mapboxgl-ctrl-icon" aria-hidden="true" title="Zoom out"></span></button><button class="mapboxgl-ctrl-compass" type="button" aria-label="Reset bearing to north"><span class="mapboxgl-ctrl-icon" aria-hidden="true" title="Reset bearing to north" style="transform: rotate(0deg);"></span></button></div></div><div class="mapboxgl-ctrl-top-right"></div><div class="mapboxgl-ctrl-bottom-left"><div class="mapboxgl-ctrl" style="display: block;"><a class="mapboxgl-ctrl-logo" target="_blank" rel="noopener nofollow" href="https://www.mapbox.com/" aria-label="Mapbox logo"></a></div></div><div class="mapboxgl-ctrl-bottom-right"><div class="mapboxgl-ctrl mapboxgl-ctrl-attrib"><button class="mapboxgl-ctrl-attrib-button" type="button"><span class="mapboxgl-ctrl-icon" aria-hidden="true" title="Toggle attribution"></span></button><div class="mapboxgl-ctrl-attrib-inner"><a href="https://www.mapbox.com/about/maps" target="_blank" title="Mapbox" aria-label="Mapbox">© Mapbox</a> <a href="https://www.openstreetmap.org/copyright/" target="_blank" title="OpenStreetMap" aria-label="OpenStreetMap">© OpenStreetMap</a> <a class="mapbox-improve-map" href="https://apps.mapbox.com/feedback/?owner=mapbox&amp;id=streets-v12&amp;access_token=pk.eyJ1IjoiZWxsZW5mcmV5amF1emFhIiwiYSI6ImNtbnBvZDd0bjJrMmYyb29vZXhrcmMycXcifQ.K1Mt6Dg-PwyUlsb4NiypmQ#/110.4617/-7.774679/18.17" target="_blank" aria-label="Improve this map" rel="noopener nofollow">Improve this map</a></div></div></div></div></div>
+            <div id="map"></div>
 
-            <div class="legend">
+            <div class="legend" id="legendBox">
               <div class="legend-title">Legenda</div>
               <div><span class="legend-color"></span>Bangunan Permukiman</div>
             </div>
@@ -238,8 +722,8 @@
     © 2026 WebGIS Bangunan Permukiman
   </footer>
 
-  <script src="./index_files/bootstrap.bundle.min.js.download"></script>
-  <script src="./index_files/mapbox-gl.js.download"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.js"></script>
 
   <script>
     // Public token Mapbox (pk...) aman untuk dipakai di GitHub Pages
@@ -251,7 +735,23 @@
     const zoomAwal = 16;
 
     const statusBox = document.getElementById('status');
+    const featureCountEl = document.getElementById('featureCount');
+    const heroFeatureCountEl = document.getElementById('heroFeatureCount');
+    const layerStatusEl = document.getElementById('layerStatus');
+    const basemapStatusEl = document.getElementById('basemapStatus');
+    const mousePositionEl = document.getElementById('mousePosition');
+    const legendBox = document.getElementById('legendBox');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    const mapWrapper = document.getElementById('mapWrapper');
+
     let dataGeojsonGlobal = null;
+    let layerVisible = true;
+
+    const basemapStyles = {
+      streets: 'mapbox://styles/mapbox/streets-v12',
+      satellite: 'mapbox://styles/mapbox/satellite-streets-v12',
+      light: 'mapbox://styles/mapbox/light-v11'
+    };
 
     function setStatus(text, isError = false) {
       statusBox.textContent = text;
@@ -264,6 +764,14 @@
         statusBox.style.background = '#d1e7dd';
         statusBox.style.color = '#0f5132';
         statusBox.style.border = '1px solid #badbcc';
+      }
+    }
+
+    function showLoading(show = true) {
+      if (show) {
+        loadingOverlay.classList.remove('hidden');
+      } else {
+        loadingOverlay.classList.add('hidden');
       }
     }
 
@@ -313,6 +821,138 @@
       });
     }
 
+    function toggleLegend() {
+      legendBox.style.display = legendBox.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function toggleLayerVisibility() {
+      const fillId = 'permukiman-fill';
+      const outlineId = 'permukiman-outline';
+
+      if (!map.getLayer(fillId) || !map.getLayer(outlineId)) return;
+
+      layerVisible = !layerVisible;
+      const visibility = layerVisible ? 'visible' : 'none';
+
+      map.setLayoutProperty(fillId, 'visibility', visibility);
+      map.setLayoutProperty(outlineId, 'visibility', visibility);
+      layerStatusEl.textContent = layerVisible ? 'Tampil' : 'Disembunyikan';
+
+      setStatus(
+        layerVisible
+          ? 'Status: layer Permukiman berhasil ditampilkan.'
+          : 'Status: layer Permukiman sedang disembunyikan.'
+      );
+    }
+
+    function toggleFullscreenMap() {
+      if (!document.fullscreenElement) {
+        mapWrapper.requestFullscreen().catch(err => {
+          console.error('Gagal fullscreen:', err);
+        });
+      } else {
+        document.exitFullscreen();
+      }
+    }
+
+    function buatHTMLPopup(properties) {
+      let isiAtribut = '';
+
+      for (const key in properties) {
+        isiAtribut += `
+          <div class="popup-item">
+            <span class="popup-key">${key}</span>
+            <span class="popup-value">${properties[key]}</span>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="popup-card">
+          <div class="popup-header">
+            <i class="fa-solid fa-building me-2"></i>Informasi Bangunan
+          </div>
+          <div class="popup-body">
+            ${isiAtribut || '<div class="popup-item"><span class="popup-key">Info</span><span class="popup-value">Tidak ada atribut</span></div>'}
+          </div>
+        </div>
+      `;
+    }
+
+    function pasangEventLayer() {
+      map.on('click', 'permukiman-fill', function (e) {
+        const properties = e.features[0].properties || {};
+
+        new mapboxgl.Popup({ className: 'custom-popup' })
+          .setLngLat(e.lngLat)
+          .setHTML(buatHTMLPopup(properties))
+          .addTo(map);
+      });
+
+      map.on('mouseenter', 'permukiman-fill', function () {
+        map.getCanvas().style.cursor = 'pointer';
+      });
+
+      map.on('mouseleave', 'permukiman-fill', function () {
+        map.getCanvas().style.cursor = '';
+      });
+    }
+
+    function tambahkanLayerGeoJSON(data) {
+      if (map.getSource('permukiman')) {
+        if (map.getLayer('permukiman-fill')) map.removeLayer('permukiman-fill');
+        if (map.getLayer('permukiman-outline')) map.removeLayer('permukiman-outline');
+        map.removeSource('permukiman');
+      }
+
+      map.addSource('permukiman', {
+        type: 'geojson',
+        data: data
+      });
+
+      map.addLayer({
+        id: 'permukiman-fill',
+        type: 'fill',
+        source: 'permukiman',
+        paint: {
+          'fill-color': '#f97316',
+          'fill-opacity': 0.75
+        }
+      });
+
+      map.addLayer({
+        id: 'permukiman-outline',
+        type: 'line',
+        source: 'permukiman',
+        paint: {
+          'line-color': '#c2410c',
+          'line-width': 1.5
+        }
+      });
+
+      if (!layerVisible) {
+        map.setLayoutProperty('permukiman-fill', 'visibility', 'none');
+        map.setLayoutProperty('permukiman-outline', 'visibility', 'none');
+      }
+
+      pasangEventLayer();
+    }
+
+    function gantiBasemap(mode) {
+      if (!basemapStyles[mode]) return;
+
+      basemapStatusEl.textContent = mode.charAt(0).toUpperCase() + mode.slice(1);
+      showLoading(true);
+      map.setStyle(basemapStyles[mode]);
+
+      map.once('style.load', function () {
+        if (dataGeojsonGlobal) {
+          tambahkanLayerGeoJSON(dataGeojsonGlobal);
+        }
+        showLoading(false);
+      });
+    }
+
     const map = new mapboxgl.Map({
       container: 'map',
       style: 'mapbox://styles/mapbox/streets-v12',
@@ -321,13 +961,23 @@
     });
 
     map.addControl(new mapboxgl.NavigationControl(), 'top-left');
+    map.addControl(new mapboxgl.FullscreenControl(), 'top-left');
+    map.addControl(new mapboxgl.ScaleControl({
+      maxWidth: 120,
+      unit: 'metric'
+    }), 'bottom-right');
 
     map.on('error', function (e) {
       console.error('Mapbox error:', e);
     });
 
+    map.on('mousemove', function (e) {
+      mousePositionEl.textContent = `${e.lngLat.lng.toFixed(6)}, ${e.lngLat.lat.toFixed(6)}`;
+    });
+
     map.on('load', async function () {
       try {
+        showLoading(true);
         setStatus('Status: membaca file GeoJSON...');
 
         const response = await fetch(geojsonPath + '?v=' + Date.now());
@@ -351,59 +1001,13 @@
         }
 
         dataGeojsonGlobal = data;
+        featureCountEl.textContent = data.features.length;
+        heroFeatureCountEl.textContent = data.features.length;
+        layerStatusEl.textContent = 'Tampil';
+
         setStatus('Status: GeoJSON berhasil dibaca. Jumlah feature: ' + data.features.length);
 
-        map.addSource('permukiman', {
-          type: 'geojson',
-          data: data
-        });
-
-        map.addLayer({
-          id: 'permukiman-fill',
-          type: 'fill',
-          source: 'permukiman',
-          paint: {
-            'fill-color': '#f97316',
-            'fill-opacity': 0.75
-          }
-        });
-
-        map.addLayer({
-          id: 'permukiman-outline',
-          type: 'line',
-          source: 'permukiman',
-          paint: {
-            'line-color': '#c2410c',
-            'line-width': 1.5
-          }
-        });
-
-        map.on('click', 'permukiman-fill', function (e) {
-          const properties = e.features[0].properties || {};
-          let isiAtribut = '';
-
-          for (const key in properties) {
-            isiAtribut += `<p style="margin:0 0 6px 0;"><b>${key}</b>: ${properties[key]}</p>`;
-          }
-
-          new mapboxgl.Popup()
-            .setLngLat(e.lngLat)
-            .setHTML(`
-              <div style="font-family: Arial, sans-serif; min-width: 180px;">
-                <h6 style="margin-bottom: 8px;">Informasi Bangunan</h6>
-                ${isiAtribut || '<p style="margin:0;">Tidak ada atribut</p>'}
-              </div>
-            `)
-            .addTo(map);
-        });
-
-        map.on('mouseenter', 'permukiman-fill', function () {
-          map.getCanvas().style.cursor = 'pointer';
-        });
-
-        map.on('mouseleave', 'permukiman-fill', function () {
-          map.getCanvas().style.cursor = '';
-        });
+        tambahkanLayerGeoJSON(data);
 
         const bounds = hitungBoundsDariGeoJSON(data);
 
@@ -414,11 +1018,14 @@
           setStatus('Status: GeoJSON terbaca, tetapi bounds kosong. Cek geometri polygon.', true);
         }
 
+        showLoading(false);
+
       } catch (error) {
         console.error('ERROR DEBUG:', error);
         setStatus('Gagal: ' + error.message, true);
+        showLoading(false);
       }
     });
   </script>
-
-</body></html>
+</body>
+</html>
